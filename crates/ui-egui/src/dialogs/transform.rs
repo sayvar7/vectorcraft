@@ -77,14 +77,14 @@ fn clean(v: f64) -> f64 {
 }
 
 /// The Move dialog's fields as it opens: Horizontal and Vertical are the offset moved last, and
-/// Copy, Transform Objects and Preview are as it was last confirmed with (Transform Patterns is
-/// General › Transform Pattern Tiles, which its OK sets).
+/// Copy and Transform Objects are as it was last confirmed with (Transform Patterns is
+/// General › Transform Pattern Tiles, which its OK sets). Preview always starts on.
 pub(crate) fn move_fields(app: &VectorcraftApp) -> Value {
     let (dx, dy) = last_move(app).unwrap_or_default();
     let mut fields = json!({"dx": format!("{} pt", clean(dx)), "dy": format!("{} pt", clean(dy))});
     let kept = &app.ui.move_options;
     let kept_bool = |k: &str| kept.get(k).and_then(Value::as_bool);
-    for k in ["copy", "objects", "preview"] {
+    for k in ["copy", "objects"] {
         if let Some(on) = kept_bool(k) {
             fields[k] = json!(on);
         }
@@ -213,7 +213,7 @@ fn confirm(app: &mut VectorcraftApp, d: &Dialog) -> Result<Value, String> {
     }
     let r = run_and_close(app, id, params)?;
     if d.kind == "move" {
-        app.ui.move_options = json!({"copy": d.bool("copy"), "objects": transform_objects(d), "preview": d.bool("preview")});
+        app.ui.move_options = json!({"copy": d.bool("copy"), "objects": transform_objects(d)});
         // Move's Transform Patterns stays as confirmed: it is the preference it starts from.
         let patterns = transform_patterns(app, d);
         if patterns != app.session.prefs.transform_pattern_tiles {
@@ -280,7 +280,11 @@ mod tests {
         let steps = undo_steps(&app);
         crate::menus::invoke(&mut app, "object.rotate", json!({}));
         frame(&mut app, None);
-        assert!(!app.session.in_interaction(), "Preview is off when the dialog opens");
+        assert!(app.session.in_interaction(), "Preview is on when the dialog opens");
+        // Preview off: the steps change the dialog only.
+        app.ui.dialog.as_mut().unwrap().fields.insert("preview".into(), json!(false));
+        frame(&mut app, None);
+        assert!(!app.session.in_interaction());
         // ↑ nine times with Shift: 90°, in the dialog only.
         for _ in 0..9 {
             frame(&mut app, Some((egui::Key::ArrowUp, egui::Modifiers::SHIFT)));
@@ -405,7 +409,7 @@ mod tests {
             let kids = app.session.doc().unwrap().doc.layers[0].children().unwrap();
             kids.iter().map(|n| n.geometric_bounds().unwrap().x0).collect::<Vec<_>>()
         };
-        assert_eq!(open(&mut app), ([0.0, 0.0], [false, true, false]), "nothing moved yet");
+        assert_eq!(open(&mut app), ([0.0, 0.0], [false, true, true]), "nothing moved yet");
         crate::dialogs::cancel(&mut app);
         // A drag: its offset, and a rotation since doesn't count.
         app.session.begin_interaction("Move").unwrap();
@@ -417,14 +421,14 @@ mod tests {
         let d = app.ui.dialog.as_mut().unwrap();
         d.fields.extend([("dx".to_string(), json!(30)), ("dy".to_string(), json!(0)), ("copy".to_string(), json!(true))]);
         crate::dialogs::confirm(&mut app).unwrap();
-        assert_eq!(open(&mut app), ([30.0, 0.0], [true, true, false]));
+        assert_eq!(open(&mut app), ([30.0, 0.0], [true, true, true]));
         crate::dialogs::confirm(&mut app).unwrap();
         assert_eq!(lefts(&app), [20.0, 50.0, 80.0], "a copy at 30 pt each time");
         // A drag moves the next one by its offset instead; the checkboxes stay.
         app.session.begin_interaction("Move").unwrap();
         app.session.preview("object.transform", &json!({"matrix": [1, 0, 0, 1, 0, 12]})).unwrap();
         app.session.commit_interaction().unwrap();
-        assert_eq!(open(&mut app), ([0.0, 12.0], [true, true, false]));
+        assert_eq!(open(&mut app), ([0.0, 12.0], [true, true, true]));
         crate::dialogs::cancel(&mut app);
     }
 

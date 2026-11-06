@@ -185,7 +185,8 @@ fn axis_choices_read_as_axes_in_every_complete_language() {
     }
 }
 
-/// Offset Path previews on the canvas; Cancel rolls the preview back.
+/// Offset Path opens with Preview on and previews on the canvas; unchecking Preview and Cancel
+/// both roll the preview back.
 #[test]
 fn offset_path_previews() {
     let (ctx, mut app) = (ctx(), app_with_selection());
@@ -195,9 +196,15 @@ fn offset_path_previews() {
     let texts = frame(&ctx, &mut app, vec![]);
     let texts = if texts.is_empty() { frame(&ctx, &mut app, vec![]) } else { texts };
     let preview = texts.iter().find(|(t, _)| t == "Preview").map(|(_, r)| *r).expect("a Preview checkbox");
+    frame(&ctx, &mut app, vec![]);
+    assert!(app.ui.dialog.as_ref().unwrap().bool("preview"), "Preview starts checked");
+    assert_eq!(count(&app), 2, "previewed without touching the checkbox");
     click(&ctx, &mut app, preview.center());
     frame(&ctx, &mut app, vec![]);
-    assert_eq!(count(&app), 2, "previewed");
+    assert_eq!(count(&app), 1, "unchecking rolls back");
+    click(&ctx, &mut app, preview.center());
+    frame(&ctx, &mut app, vec![]);
+    assert_eq!(count(&app), 2, "previewed again");
     cancel(&mut app);
     assert_eq!(count(&app), 1, "rolled back");
 }

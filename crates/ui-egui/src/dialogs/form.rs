@@ -561,7 +561,9 @@ pub(super) fn preview_result(
 ) -> Option<Value> {
     const LAST: &str = PREVIEWED;
     ui.add_space(8.0);
-    let mut on = d.bool("preview");
+    // Preview starts on unless the dialog opened with it explicitly off.
+    let mut on = d.fields.get("preview").and_then(Value::as_bool).unwrap_or(true);
+    d.fields.insert("preview".into(), json!(on));
     if crate::widgets::check(ui, tl!("Preview"), on, true) {
         on = !on;
         d.fields.insert("preview".into(), json!(on));
