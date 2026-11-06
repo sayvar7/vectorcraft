@@ -4748,3 +4748,5 @@ theme	Appearance	Giao diện
 @msg	`{given}` isn't a library panel (see window.swatchLibrary)	`{given}` không phải là bảng thư viện (xem window.swatchLibrary)
 @msg	library panel `{given}` isn't open	bảng thư viện `{given}` chưa được mở
 @msg	too many library panels were opened in this session	đã mở quá nhiều bảng thư viện trong phiên này
+	Next Document	Tài liệu tiếp theo
+	Previous Document	Tài liệu trước

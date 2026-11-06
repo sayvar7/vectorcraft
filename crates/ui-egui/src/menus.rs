@@ -331,6 +331,18 @@ pub const UI_COMMANDS: &[(&str, &str, &str, &str)] = &[
         "{} hide the panels, the toolbar and the Control bar, or show again the ones the last Tab hid (all three when none of them shows and Tab hid none); returns whether it showed them",
     ),
     (
+        "window.nextDocument",
+        "Next Document",
+        "Ctrl+Tab",
+        "{} activate the document tab to the right of the active one (the first after the last); returns {index}",
+    ),
+    (
+        "window.previousDocument",
+        "Previous Document",
+        "Ctrl+Shift+Tab",
+        "{} activate the document tab to the left of the active one (the last before the first); returns {index}",
+    ),
+    (
         "window.panels",
         "Panels Except Tools and Control",
         "Shift+Tab",
@@ -1435,6 +1447,8 @@ pub fn run_ui_command(app: &mut VectorcraftApp, id: &str, p: &Value) -> Option<R
             None => Err("brightness must be dark|mediumDark|mediumLight|light".into()),
         },
         "window.newWindow" => Err("multiple windows land with M11.5".into()),
+        "window.nextDocument" => crate::chrome::cycle_document(app, 1),
+        "window.previousDocument" => crate::chrome::cycle_document(app, -1),
         "tool.select" => match s("tool") {
             Some(t) if vectorcraft_tools::tool_info(&t).is_some() => {
                 app.select_tool(&t);
@@ -2882,6 +2896,8 @@ pub fn menu_tree_named(english_names: bool) -> Vec<(&'static str, Vec<Item>)> {
             "Window",
             vec![
                 c("New Window", "window.newWindow"),
+                c("Next Document", "window.nextDocument"),
+                c("Previous Document", "window.previousDocument"),
                 sub("Arrange", vec![todo("Cascade"), todo("Tile"), todo("Float in Window"), todo("Consolidate All Windows")]),
                 sub("Workspace", crate::workspaces::menu_items()),
                 Sep,

@@ -418,6 +418,43 @@ fn first_tab_shown(widths: &[f32], active: Option<usize>, room: f32) -> usize {
 /// Document tab strip: "Name* @ 66.67% (RGB/Preview)". User Interface › Large Tabs makes the tabs
 /// taller, with larger titles. Tabs that don't fit are reached from a » button at the strip's
 /// right end, which lists every open document, and the active tab is always in view (#746).
+/// Make document `i` the active tab, as a click on it does: leaves the Home screen, and with the
+/// Artboard tool keeps the displayed board as its target. Returns false for no such document.
+pub fn activate_tab(app: &mut VectorcraftApp, i: usize) -> bool {
+    app.ui.home = None;
+    let changed = app.session.active_index() != Some(i);
+    if !app.session.set_active(i) {
+        return false;
+    }
+    if changed
+        && app.session.tool_id() == "artboard"
+        && let Some(n) = app.session.active().map(|d| d.doc.artboards.len())
+    {
+        // A document switch recreates the tool; restore the displayed board as its target.
+        // Clicking the current tab keeps its existing multiselection and tool options.
+        let selected = crate::panels::artboards::selected(app, n);
+        crate::panels::artboards::select(app, selected);
+    }
+    true
+}
+
+/// Window › Next Document (`step` 1, Ctrl+Tab) and Previous Document (-1, Ctrl+Shift+Tab): the
+/// tab beside the active one, wrapping at the ends. From the Home screen, Next goes to the first
+/// tab and Previous to the last.
+pub fn cycle_document(app: &mut VectorcraftApp, step: isize) -> Result<serde_json::Value, String> {
+    let n = app.session.documents().len();
+    if n == 0 {
+        return Err("no document open".into());
+    }
+    let current = app.session.active_index().filter(|_| app.ui.home.is_none());
+    let next = match current {
+        Some(i) => (i as isize + step).rem_euclid(n as isize) as usize,
+        None if step < 0 => n - 1,
+        None => 0,
+    };
+    if activate_tab(app, next) { Ok(serde_json::json!({ "index": next })) } else { Err("no such document".into()) }
+}
+
 pub fn doc_tabs(app: &mut VectorcraftApp, ui: &mut Ui) {
     /// The width of the » button.
     const MORE: f32 = 30.0;
@@ -495,18 +532,7 @@ pub fn doc_tabs(app: &mut VectorcraftApp, ui: &mut Ui) {
             app.status(e);
         }
     } else if let Some(i) = activate {
-        app.ui.home = None;
-        let changed = app.session.active_index() != Some(i);
-        if app.session.set_active(i)
-            && changed
-            && app.session.tool_id() == "artboard"
-            && let Some(n) = app.session.active().map(|d| d.doc.artboards.len())
-        {
-            // A document switch recreates the tool; restore the displayed board as its target.
-            // Clicking the current tab keeps its existing multiselection and tool options.
-            let selected = crate::panels::artboards::selected(app, n);
-            crate::panels::artboards::select(app, selected);
-        }
+        activate_tab(app, i);
     }
     // Isolation mode breadcrumb bar.
     if let Some(st) = app.session.active()

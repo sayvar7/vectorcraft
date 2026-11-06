@@ -5154,3 +5154,5 @@ theme	Appearance	Apparence
 @msg	`{given}` isn't a library panel (see window.swatchLibrary)	`{given}` n’est pas un panneau de bibliothèque (voir window.swatchLibrary)
 @msg	library panel `{given}` isn't open	le panneau de bibliothèque `{given}` n’est pas ouvert
 @msg	too many library panels were opened in this session	trop de panneaux de bibliothèque ont été ouverts dans cette session
+	Next Document	Document suivant
+	Previous Document	Document précédent

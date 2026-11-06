@@ -5107,3 +5107,5 @@ effect	Points	Σημεία
 @msg	`{given}` isn't a library panel (see window.swatchLibrary)	Το `{given}` δεν είναι πίνακας βιβλιοθήκης (δείτε window.swatchLibrary)
 @msg	library panel `{given}` isn't open	ο πίνακας βιβλιοθήκης `{given}` δεν είναι ανοιχτός
 @msg	too many library panels were opened in this session	άνοιξαν πάρα πολλοί πίνακες βιβλιοθηκών σε αυτή τη συνεδρία
+	Next Document	Επόμενο έγγραφο
+	Previous Document	Προηγούμενο έγγραφο

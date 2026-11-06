@@ -5141,3 +5141,5 @@ imageTrace	Outline	Körvonal
 @msg	`{given}` isn't a library panel (see window.swatchLibrary)	A(z) `{given}` nem könyvtárpanel (lásd: window.swatchLibrary)
 @msg	library panel `{given}` isn't open	a(z) `{given}` könyvtárpanel nincs megnyitva
 @msg	too many library panels were opened in this session	ebben a munkamenetben túl sok könyvtárpanel nyílt meg
+	Next Document	Következő dokumentum
+	Previous Document	Előző dokumentum

@@ -4732,3 +4732,5 @@ lighting	Light	광원
 @msg	`{given}` isn't a library panel (see window.swatchLibrary)	`{given}`은(는) 라이브러리 패널이 아닙니다(window.swatchLibrary 참조)
 @msg	library panel `{given}` isn't open	라이브러리 패널 `{given}`이(가) 열려 있지 않습니다
 @msg	too many library panels were opened in this session	이 세션에서 라이브러리 패널을 너무 많이 열었습니다
+	Next Document	다음 문서
+	Previous Document	이전 문서

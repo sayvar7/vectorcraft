@@ -5072,3 +5072,5 @@ mark-style	Japanese	Japonesas
 @msg	`{given}` isn't a library panel (see window.swatchLibrary)	`{given}` não é um painel de biblioteca (consulte window.swatchLibrary)
 @msg	library panel `{given}` isn't open	o painel de biblioteca `{given}` não está aberto
 @msg	too many library panels were opened in this session	foram abertos painéis de biblioteca demais nesta sessão
+	Next Document	Próximo Documento
+	Previous Document	Documento Anterior

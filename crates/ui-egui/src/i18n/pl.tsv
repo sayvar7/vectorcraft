@@ -5007,3 +5007,5 @@ mark-style	Japanese	Japońskie
 @msg	`{given}` isn't a library panel (see window.swatchLibrary)	`{given}` nie jest panelem biblioteki (zobacz window.swatchLibrary)
 @msg	library panel `{given}` isn't open	panel biblioteki `{given}` nie jest otwarty
 @msg	too many library panels were opened in this session	w tej sesji otwarto zbyt wiele paneli bibliotek
+	Next Document	Następny dokument
+	Previous Document	Poprzedni dokument

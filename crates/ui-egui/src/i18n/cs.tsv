@@ -5155,3 +5155,5 @@ mark-style	Japanese	Japonské
 @msg	`{given}` isn't a library panel (see window.swatchLibrary)	`{given}` není panel knihovny (viz window.swatchLibrary)
 @msg	library panel `{given}` isn't open	panel knihovny `{given}` není otevřený
 @msg	too many library panels were opened in this session	v této relaci bylo otevřeno příliš mnoho panelů knihoven
+	Next Document	Další dokument
+	Previous Document	Předchozí dokument

@@ -5097,3 +5097,5 @@ mark-style	Japanese	Japonesas
 @msg	`{given}` isn't a library panel (see window.swatchLibrary)	`{given}` no es un panel de biblioteca (consulte window.swatchLibrary)
 @msg	library panel `{given}` isn't open	el panel de biblioteca `{given}` no está abierto
 @msg	too many library panels were opened in this session	se abrieron demasiados paneles de biblioteca en esta sesión
+	Next Document	Documento siguiente
+	Previous Document	Documento anterior

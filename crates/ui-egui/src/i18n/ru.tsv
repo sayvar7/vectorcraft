@@ -4764,3 +4764,5 @@ lighting	Light	Свет
 @msg	`{given}` isn't a library panel (see window.swatchLibrary)	`{given}` — не панель библиотеки (см. window.swatchLibrary)
 @msg	library panel `{given}` isn't open	панель библиотеки `{given}` не открыта
 @msg	too many library panels were opened in this session	в этом сеансе открыто слишком много панелей библиотек
+	Next Document	Следующий документ
+	Previous Document	Предыдущий документ

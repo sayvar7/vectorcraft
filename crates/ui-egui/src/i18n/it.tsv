@@ -4768,3 +4768,5 @@ lighting	Light	Luce
 @msg	`{given}` isn't a library panel (see window.swatchLibrary)	`{given}` non è un pannello libreria (vedi window.swatchLibrary)
 @msg	library panel `{given}` isn't open	il pannello libreria `{given}` non è aperto
 @msg	too many library panels were opened in this session	in questa sessione sono stati aperti troppi pannelli libreria
+	Next Document	Documento successivo
+	Previous Document	Documento precedente

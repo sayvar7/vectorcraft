@@ -932,6 +932,54 @@ mod tests {
         assert_eq!(doc["layers"][0]["children"][0]["name"], "a\tb");
     }
 
+    /// Ctrl+Tab and Ctrl+Shift+Tab go to the next and previous document tab, wrapping at the ends,
+    /// and leave the panels alone (plain Tab and Shift+Tab hide them).
+    #[test]
+    fn ctrl_tab_cycles_the_documents() {
+        let mut app = VectorcraftApp::new(vectorcraft_engine::Session::new(), Default::default());
+        for _ in 0..3 {
+            app.session.execute("file.new", &json!({"width": 200, "height": 200})).unwrap();
+        }
+        app.session.execute("document.activate", &json!({"index": 0})).unwrap();
+        let ctx = egui::Context::default();
+        let screen = egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1600.0, 850.0));
+        let run = |app: &mut VectorcraftApp, events: Vec<egui::Event>| {
+            let mut out = ctx.run_ui(egui::RawInput { events, screen_rect: Some(screen), ..Default::default() }, |ui| {
+                app.logic(ui.ctx());
+                app.ui(ui);
+            });
+            out.textures_delta.clear();
+        };
+        let ctrl = if cfg!(target_os = "macos") { Modifiers { ctrl: true, ..Modifiers::NONE } } else { Modifiers::CTRL | Modifiers::COMMAND };
+        let tab = |modifiers| {
+            vec![
+                egui::Event::ModifiersChanged(modifiers),
+                egui::Event::Key { key: Key::Tab, physical_key: None, pressed: true, repeat: false, modifiers },
+            ]
+        };
+        for _ in 0..3 {
+            run(&mut app, vec![]);
+        }
+        let shown = |app: &VectorcraftApp| (app.ui.dock, app.ui.toolbar, app.ui.control_bar);
+        let before = shown(&app);
+        assert!(app.ui.dock && app.ui.toolbar);
+        let mut seen = vec![];
+        for _ in 0..3 {
+            run(&mut app, tab(ctrl));
+            seen.push(app.session.active_index());
+        }
+        assert_eq!(seen, [Some(1), Some(2), Some(0)], "Ctrl+Tab goes right and wraps to the first");
+        run(&mut app, tab(ctrl | Modifiers::SHIFT));
+        assert_eq!(app.session.active_index(), Some(2), "Ctrl+Shift+Tab goes left and wraps to the last");
+        run(&mut app, tab(ctrl | Modifiers::SHIFT));
+        assert_eq!(app.session.active_index(), Some(1));
+        run(&mut app, vec![egui::Event::ModifiersChanged(Modifiers::NONE)]);
+        assert_eq!(shown(&app), before, "the panels stay as they were");
+        // The command reports where it went; Previous from the first tab is the last.
+        app.session.execute("document.activate", &json!({"index": 0})).unwrap();
+        assert_eq!(app.run("window.previousDocument", json!({})).unwrap()["index"], 2);
+    }
+
     /// Shift+Tab shows and hides the panels and leaves the toolbar and the Control bar as they are,
     /// while Tab hides all three. Hiding the panels closes a panel popped out of the icon column.
     /// In a focused field neither key shows or hides anything.
