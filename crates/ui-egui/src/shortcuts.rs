@@ -80,6 +80,7 @@ pub(crate) fn all_shortcuts() -> Vec<(KeyboardShortcut, &'static str, serde_json
             v.push((sc, "window.panel", json!({ "panel": panel })));
         }
     }
+    alignment_center_chord(&mut v);
     settings_chord(&mut v, cfg!(target_os = "macos"));
     // Most specific (most modifiers) first so Cmd+Shift+Z isn't eaten by Cmd+Z.
     v.sort_by_key(|(sc, ..)| {
@@ -88,8 +89,15 @@ pub(crate) fn all_shortcuts() -> Vec<(KeyboardShortcut, &'static str, serde_json
     v
 }
 
-/// On a Mac, Cmd+, opens Settings as in every Mac app (#663), beside Preferences' own shortcut,
-/// unless a command or a user's shortcut already took it.
+/// The middle keypad position centers both axes without replacing a custom binding.
+fn alignment_center_chord(v: &mut Vec<(KeyboardShortcut, &'static str, serde_json::Value)>) {
+    let sc = KeyboardShortcut::new(Modifiers::ALT, Key::Num5);
+    if !v.iter().any(|(s, ..)| *s == sc) {
+        v.push((sc, "align.horizontalVerticalCenter", json!({})));
+    }
+}
+
+/// On a Mac, Cmd+, opens Settings unless a command already has the chord.
 fn settings_chord(v: &mut Vec<(KeyboardShortcut, &'static str, serde_json::Value)>, mac: bool) {
     if let Some(sc) = parse("Cmd+,").filter(|sc| mac && !v.iter().any(|(s, ..)| s == sc)) {
         v.push((sc, "edit.preferences", json!({})));
@@ -101,8 +109,61 @@ fn settings_chord(v: &mut Vec<(KeyboardShortcut, &'static str, serde_json::Value
 /// is ignored).
 pub(crate) fn consume(i: &mut egui::InputState, sc: &KeyboardShortcut) -> bool {
     i.consume_shortcut(sc)
+        || consume_alignment_numpad(i, sc)
         || (sc.logical_key == Key::Equals && i.consume_key(sc.modifiers, Key::Plus))
         || (sc.modifiers.shift && shifted(sc.logical_key).is_some_and(|k| i.consume_key(sc.modifiers, k)))
+}
+
+/// With Num Lock off, the keypad reports a navigation key logically and a
+/// digit physically. Match the physical digit only for Alt+number alignment
+/// chords, leaving ordinary arrows, text fields and other modifiers alone.
+fn consume_alignment_numpad(i: &mut egui::InputState, sc: &KeyboardShortcut) -> bool {
+    if sc.modifiers != Modifiers::ALT || digit_of(sc.logical_key).is_none() {
+        return false;
+    }
+    let mut consumed = false;
+    i.events.retain(|event| {
+        let take = matches!(event, egui::Event::Key {
+            physical_key: Some(physical), pressed: true, modifiers, ..
+        } if *physical == sc.logical_key && modifiers.matches_exact(sc.modifiers));
+        consumed |= take;
+        !take
+    });
+    consumed
+}
+
+#[test]
+fn alt_numpad_uses_physical_digits_with_num_lock_off() {
+    let mut input = egui::InputState::default();
+    input.events.push(egui::Event::Key {
+        key: Key::ArrowLeft,
+        physical_key: Some(Key::Num4),
+        pressed: true,
+        repeat: false,
+        modifiers: Modifiers::ALT,
+    });
+    assert!(consume(&mut input, &parse("Alt+4").unwrap()));
+    assert!(input.events.is_empty());
+    input.events.push(egui::Event::Key {
+        key: Key::ArrowLeft,
+        physical_key: Some(Key::ArrowLeft),
+        pressed: true,
+        repeat: false,
+        modifiers: Modifiers::ALT,
+    });
+    assert!(!consume(&mut input, &parse("Alt+4").unwrap()));
+    assert_eq!(input.events.len(), 1);
+}
+
+#[test]
+fn alt_five_centers_without_replacing_an_existing_assignment() {
+    let mut shortcuts = vec![];
+    alignment_center_chord(&mut shortcuts);
+    assert_eq!(shortcuts[0].1, "align.horizontalVerticalCenter");
+    let mut shortcuts = vec![(parse("Alt+5").unwrap(), "view.zoomIn", json!({}))];
+    alignment_center_chord(&mut shortcuts);
+    assert_eq!(shortcuts.len(), 1);
+    assert_eq!(shortcuts[0].1, "view.zoomIn");
 }
 
 /// The key a shifted punctuation key arrives as: egui reports the character typed, so Cmd+Shift+[

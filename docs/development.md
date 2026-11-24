@@ -368,6 +368,12 @@ do not replace expected hashes automatically in response to a download mismatch.
 
 ## Revision history
 
+Native alignment shortcuts: Alt+number commands accept physical keypad digits
+when Num Lock is off (logical navigation keys), without capturing the separate
+arrow keys. Alt+5 centers horizontally and vertically as an additional shortcut,
+unless already assigned to another command. Existing shortcut overrides remain
+in effect. Regression coverage lives in `ui-egui/src/shortcuts.rs`.
+
 | Date | Change | Summary |
 |---|---|---|
 | 2026-10-14 | minor | Document the `bundled-fonts` feature of vectorcraft-text and vectorcraft-engine (Fonts › Leaving out the bundled fonts). |
